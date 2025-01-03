@@ -6,7 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class orderItem extends Model
 {
-    protected $gaurded = ['id' , 'timestamps'];
+    protected $gaurded = [];
+    protected $fillable = [
+        'product_id',
+    ];
 
     public function order()
     {

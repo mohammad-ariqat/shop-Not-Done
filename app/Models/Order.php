@@ -6,19 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
 {
-    protected $gaurded = ['timestamps', 'id'];
-    /*protected $fillable = [
+    protected $gaurded = [];
+    protected $fillable = [
         'user_id',
-        'status',
-        'total',
-        'payment_method',
-        'payment_status',
-        'currency',
-        'shipping_cost',
-        'shipping_method',
-        'notes',
-
-    ];*/
+    ];
 
     public function user()
     {
