@@ -22,6 +22,7 @@ use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -65,54 +66,54 @@ class OrderResource extends Resource
                             ->required(),
 
                         ToggleButtons::make('status')
-                                ->label('Order Status')
-                                ->required()
-                                ->default('new')
-                                ->inline()
-                                ->options([
-                                    'new' => 'New',
-                                    'Processing' => 'Processing',
-                                    'Shipped' => 'Shipped',
-                                    'Delivered' => 'Delivered',
-                                    'Cancelled' => 'Cancelled',
-                                ])
-                                ->colors([
-                                    'new' => 'info',
-                                    'Processing' => 'warning',
-                                    'Shipped' => 'success',
-                                    'Delivered' => 'success',
-                                    'Cancelled' => 'danger',
-                                ])
-                                ->icons([
-                                    'new' => 'heroicon-m-sparkles',
-                                    'Processing' => 'heroicon-m-arrow-path',
-                                    'Shipped' => 'heroicon-m-truck',
-                                    'Delivered' => 'heroicon-m-check-badge',
-                                    'Cancelled' => 'heroicon-s-x-circle',
-                                ]),
-                                Select::make('currency')
-                                    ->label('Currency')
-                                    ->options([
-                                        'USD' => 'USD',
-                                        'INR' => 'INR',
-                                        'EUR' => 'EUR',
-                                        'JPY' => 'JPY',
-                                    ])
-                                    ->default('USD')
-                                    ->required(),
-                                    Select::make('shipping_method')
-                                    ->label('Shipping Method')
-                                    ->options([
-                                        'fedex' => 'Fedex',
-                                        'dhl' => 'DHL',
-                                        'ups' => 'UPS',
-                                        'usps' => 'USPS',
-                                    ]),
+                            ->label('Order Status')
+                            ->required()
+                            ->default('new')
+                            ->inline()
+                            ->options([
+                                'new' => 'New',
+                                'Processing' => 'Processing',
+                                'Shipped' => 'Shipped',
+                                'Delivered' => 'Delivered',
+                                'Cancelled' => 'Cancelled',
+                            ])
+                            ->colors([
+                                'new' => 'info',
+                                'Processing' => 'warning',
+                                'Shipped' => 'success',
+                                'Delivered' => 'success',
+                                'Cancelled' => 'danger',
+                            ])
+                            ->icons([
+                                'new' => 'heroicon-m-sparkles',
+                                'Processing' => 'heroicon-m-arrow-path',
+                                'Shipped' => 'heroicon-m-truck',
+                                'Delivered' => 'heroicon-m-check-badge',
+                                'Cancelled' => 'heroicon-s-x-circle',
+                            ]),
+                        Select::make('currency')
+                            ->label('Currency')
+                            ->options([
+                                'USD' => 'USD',
+                                'INR' => 'INR',
+                                'EUR' => 'EUR',
+                                'JPY' => 'JPY',
+                            ])
+                            ->default('USD')
+                            ->required(),
+                        Select::make('shipping_method')
+                            ->label('Shipping Method')
+                            ->options([
+                                'fedex' => 'Fedex',
+                                'dhl' => 'DHL',
+                                'ups' => 'UPS',
+                                'usps' => 'USPS',
+                            ]),
 
-                                    Textarea::make('notes')
-                                        ->columnSpanFull()
-                    ])->columns(2),  
-                                    
+                        Textarea::make('notes')
+                            ->columnSpanFull()
+                    ])->columns(2),
+
                     Section::make('Order Items')->schema([
                         Repeater::make('items')
                             ->relationship()
@@ -127,8 +128,8 @@ class OrderResource extends Resource
                                     ->disableOptionsWhenSelectedInSiblingRepeaterItems()
                                     ->columnSpan(4)
                                     ->reactive()
-                                    ->afterStateUpdated(fn (Set $set, $state) => $set('unit_amount', Product::find($state)?->price ?? 0))
-                                    ->afterStateUpdated(fn (Set $set, $state) => $set('total_amount', $state * Product::find($state)?->price ?? 0)),
+                                    ->afterStateUpdated(fn(Set $set, $state) => $set('unit_amount', Product::find($state)?->price ?? 0))
+                                    ->afterStateUpdated(fn(Set $set, $state) => $set('total_amount', $state * Product::find($state)?->price ?? 0)),
 
                                 TextInput::make('quantity')
                                     ->required()
@@ -137,7 +138,7 @@ class OrderResource extends Resource
                                     ->default(1)
                                     ->columnSpan(2)
                                     ->reactive()
-                                    ->afterStateUpdated(fn (Set $set, $state , Get $get) => $set('total_amount', $state * $get('unit_amount'))),
+                                    ->afterStateUpdated(fn(Set $set, $state, Get $get) => $set('total_amount', $state * $get('unit_amount'))),
 
                                 TextInput::make('unit_amount')
                                     ->required()
@@ -155,23 +156,24 @@ class OrderResource extends Resource
 
                             ])->columns(12),
 
-                            Placeholder::make('grand_total_placeholder')
-                                ->label('Grand Total')
-                                ->content(function (Get $get , Set $set) {
-                                    $total = 0;
-                                    if (!$repeaters = $get('items')) {
-                                        return $total;
-                                    }
+                        Placeholder::make('grand_total_placeholder')
+                            ->label('Grand Total')
+                            ->content(function (Get $get, Set $set) {
+                                $total = 0;
+                                if (!$repeaters = $get('items')) {
+                                    return $total;
+                                }
 
-                                    foreach ($repeaters as $Key => $repeaters) {
-                                        $total += $get("items.{$Key}.total_amount");
-                                    }
-                                    return SupportNumber::Currency($total , 'USD');
-                                }),
-                                Hidden::make('grand_total')
-                                    ->default(0)
-                                
-                            
+                                foreach ($repeaters as $Key => $repeaters) {
+                                    $total += $get("items.{$Key}.total_amount");
+                                }
+                                $set('grand_total', $total);
+                                return SupportNumber::Currency($total, 'USD');
+                            }),
+                        Hidden::make('grand_total')
+                            ->default(0)
+
+
                     ])
                 ])->columnSpanFull()
             ]);
@@ -181,7 +183,9 @@ class OrderResource extends Resource
     {
         return $table
             ->columns([
-                //
+                TextColumn::make('user.name')
+                    ->searchable()
+                    ->sortable()
             ])
             ->filters([
                 //
